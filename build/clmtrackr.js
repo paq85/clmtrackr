@@ -14702,11 +14702,33 @@ var clm = {
 
 
 			var pdata, pmatrix, grayscaleColor;
+			// Some modern browsers (eg. Chrome > 76) try to use GPU hardware acceleration which in this case causes
+			// delay when we want to getImageData.
+			// This results in slow face detection (< 20 FPS) and browser console showing
+			// "[Violation] 'requestAnimationFrame' handler took <N>ms"
+			// To optimize this we read the image from the graphics card once and get parts of it using main RAM.
+			var rgbaColors = 4;
+			var completeImage = sketchCC.getImageData(0,0, sketchW, sketchH);
 			for (var i = 0; i < numPatches; i++) {
 				px = patchPositions[i][0]-(pw/2);
 				py = patchPositions[i][1]-(pl/2);
-				ptch = sketchCC.getImageData(Math.round(px), Math.round(py), pw, pl);
-				pdata = ptch.data;
+
+				var currW = 0;
+				var currH = 0;
+				pdata = [];
+
+				for (var a = (sketchW * Math.round(py) + Math.round(px)); a < (sketchW * (Math.round(py) + pl) + pw); a++) {
+					currW++;
+					pdata.push(completeImage.data[a * rgbaColors]);
+					pdata.push(completeImage.data[a * rgbaColors + 1]);
+					pdata.push(completeImage.data[a * rgbaColors + 2]);
+					pdata.push(completeImage.data[a * rgbaColors + 3]);
+					if (currW === pw) {
+						a += (sketchW - pw);
+						currH++;
+						currW = 0;
+					}
+				}
 
 				// convert to grayscale
 				pmatrix = patches[i];
