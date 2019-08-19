@@ -427,7 +427,7 @@ var clm = {
 			// delay when we want to getImageData.
 			// This results in slow face detection (< 20 FPS) and browser console showing
 			// "[Violation] 'requestAnimationFrame' handler took <N>ms"
-			// To optimize this we read the image from the graphics card once and get parts of if using main RAM.
+			// To optimize this we read the image from the graphics card once and get parts of it using main RAM.
 			var rgbaColors = 4;
 			var completeImage = sketchCC.getImageData(0,0, sketchW, sketchH);
 			for (var i = 0; i < numPatches; i++) {
